@@ -67,7 +67,7 @@ public class PhysicsStaffMouseHandler implements InteractCallback {
         final double rotationSensitivity = config.physicsStaffRotateSensitivity.get();
         assert mc.player != null;
 
-        double snappingangletempreplacewithconfig = Math.PI / 4;
+        double snappingangletempreplacewithconfig = Math.PI / config.physicsStaffSnappingAngle.get();
 
         if (dragSession.getLastInputState() == ClientDragSession.DragRotationType.FREE) {
             //Update horizontal rotation axis
