@@ -1,4 +1,4 @@
-package dev.simulated_team.simulated.content.physics_staff;
+package dev.simulated_team.simulated.content.physics_staff.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -89,10 +89,10 @@ public class PhysicsStaffItemRenderer extends CustomRenderedItemModelRenderer {
 
         if (context.firstPerson()) {
             if (clientHandler.getDragSession() != null) {
-                final PhysicsStaffClientHandler.ClientDragSession dragSession = clientHandler.getDragSession();
+                final ClientDragSession dragSession = clientHandler.getDragSession();
 
                 final Quaternionf rotation = minecraft.gameRenderer.getMainCamera().rotation();
-                final Vector3d globalAnchor = ((ClientSubLevel) dragSession.dragSubLevel()).renderPose().transformPosition(new Vector3d(dragSession.dragLocalAnchor()));
+                final Vector3d globalAnchor = ((ClientSubLevel) dragSession.getDraggedSubLevel()).renderPose().transformPosition(new Vector3d(dragSession.getLocalAnchor()));
                 final Vector3d dirToAnchor = globalAnchor.sub(JOMLConversion.toJOML(player.getEyePosition(partialTicks))).normalize();
                 rotation.transformInverse(dirToAnchor);
 
@@ -105,7 +105,6 @@ public class PhysicsStaffItemRenderer extends CustomRenderedItemModelRenderer {
 
             ms.mulPose(utilQuat.identity().rotateZ((float) Math.toRadians((tiltAmount * 0.5 + 0.5) * -61.0f) * tiltMultiplier));
         }
-
 
         renderer.render(model.getOriginalModel(), light);
 
@@ -131,7 +130,7 @@ public class PhysicsStaffItemRenderer extends CustomRenderedItemModelRenderer {
 
         if (context.firstPerson()) {
             if (clientHandler.getDragSession() != null)
-                clientHandler.lastCubeOrientation.set(clientHandler.getDragSession().dragOrientation());
+                clientHandler.lastCubeOrientation.set(clientHandler.getDragSession().getOrientation());
 
             final Matrix4f m = new Matrix4f(ms.last().pose());
             m.m30(0).m31(0).m32(0);

@@ -17,8 +17,8 @@ import dev.simulated_team.simulated.content.end_sea.EndSeaPhysicsData;
 import dev.simulated_team.simulated.content.entities.diagram.DiagramEntity;
 import dev.simulated_team.simulated.content.entities.launched_plunger.LaunchedPlungerServerHandler;
 import dev.simulated_team.simulated.content.navigation_targets.lodestone_compass_compatability.LodestoneTrackingMap;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffServerHandler;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffSubLevelObserver;
+import dev.simulated_team.simulated.content.physics_staff.server.PhysicsStaffServerHandler;
+import dev.simulated_team.simulated.content.physics_staff.server.PhysicsStaffSubLevelObserver;
 import dev.simulated_team.simulated.content.worldgen.SimulatedWorldPreset;
 import dev.simulated_team.simulated.index.SimBlocks;
 import dev.simulated_team.simulated.index.SimTags;
@@ -58,10 +58,10 @@ public class SimulatedCommonEvents {
         RedstoneMagnetBlockEntity.GLOBAL_REDSTONE_MAGNET_MAP.tick(level);
         DockingConnectorBlockEntity.MAGNET_CONTROLLER.tick(level);
 
-	    final LodestoneTrackingMap lodestoneMap = LodestoneTrackingMap.getOrLoad(level);
-		if (lodestoneMap != null) {
-			lodestoneMap.tick();
-		}
+        final LodestoneTrackingMap lodestoneMap = LodestoneTrackingMap.getOrLoad(level);
+        if (lodestoneMap != null) {
+            lodestoneMap.tick();
+        }
     }
 
     public static void onWorldLoad(final LevelAccessor level) {
@@ -96,10 +96,10 @@ public class SimulatedCommonEvents {
 
     public static void onChunkLoad(final LevelAccessor level, final ChunkAccess chunk, final boolean newChunk) {
         for (final Map.Entry<ResourceLocation, SimulatedWorldPreset> entry : SimWorldPresets.PRESETS.entrySet()) {
-            if(level instanceof final ServerLevel serverLevel) {
+            if (level instanceof final ServerLevel serverLevel) {
                 final ResourceLocation worldPreset = ((PrimaryLevelDataExtension) serverLevel.getServer().getWorldData()).getPreset();
 
-                if(entry.getValue().id().equals(worldPreset)) {
+                if (entry.getValue().id().equals(worldPreset)) {
                     entry.getValue().onChunkLoad(serverLevel, chunk, newChunk);
                 }
             }
@@ -138,7 +138,7 @@ public class SimulatedCommonEvents {
         }
 
         serverContainer.addObserver(new PhysicsStaffSubLevelObserver(serverContainer.getLevel()));
-        
+
         final SubLevelTrackingSystem trackingSystem = serverContainer.trackingSystem();
         trackingSystem.addTrackingPlugin(new ServerRopeTrackingSystem(serverContainer.getLevel()));
     }

@@ -1,7 +1,8 @@
-package dev.simulated_team.simulated.content.physics_staff;
+package dev.simulated_team.simulated.content.physics_staff.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.AllKeys;
 import com.simibubi.create.CreateClient;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.JOMLConversion;
@@ -9,6 +10,8 @@ import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.simulated_team.simulated.SimulatedClient;
 import dev.simulated_team.simulated.config.client.items.SimItemConfigs;
+import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffAction;
+import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffItem;
 import dev.simulated_team.simulated.index.SimKeys;
 import dev.simulated_team.simulated.index.SimSoundEvents;
 import dev.simulated_team.simulated.network.packets.physics_staff.PhysicsStaffActionPacket;
@@ -19,22 +22,19 @@ import dev.simulated_team.simulated.util.click_interactions.InteractCallback;
 import foundry.veil.api.network.VeilPacketManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.outliner.LineOutline;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -72,23 +72,21 @@ public class PhysicsStaffClientHandler {
     public float cubeScale = 0;
     public float previousCubeScale = 0;
     public Quaternionf lastCubeOrientation = new Quaternionf();
-    private State state = State.PASSIVE;
-    private boolean holdingStaff;
+    protected State state = State.PASSIVE;
+    protected boolean holdingStaff;
 
     @Nullable
-    private ClientDragSession dragSession;
+    protected ClientDragSession dragSession;
     @Nullable
-    private LoopingSoundInstance sound;
+    protected LoopingSoundInstance sound;
 
     public static Vec3 getStaffFocusPos(final Player player, final boolean mainHand, final float pt) {
         final Minecraft minecraft = Minecraft.getInstance();
         final Camera camera = minecraft.gameRenderer.getMainCamera();
 
         if (player.isLocalPlayer() && !camera.isDetached()) {
-            final Vec3 savedPos = PhysicsStaffItemRenderer.getFirstPersonFocusPos(pt)
+            return PhysicsStaffItemRenderer.getFirstPersonFocusPos(pt)
                     .add(player.getPosition(pt)).add(0, Mth.lerp(pt, camera.eyeHeightOld, camera.eyeHeight), 0);
-
-            return savedPos;
         }
 
         final Vec3 viewDirection = player.calculateViewVector(0.0f, player.getPreciseBodyRotation(pt));
@@ -111,6 +109,10 @@ public class PhysicsStaffClientHandler {
         this.onItemUsed(PhysicsStaffAction.LOCK);
     }
 
+    public boolean isHoldingStaff() {
+        return this.holdingStaff;
+    }
+
     public void onItemUsed(final PhysicsStaffAction action) {
         if (!this.holdingStaff)
             return;
@@ -131,9 +133,9 @@ public class PhysicsStaffClientHandler {
 
         // lock currently holding sub-level
         if (this.dragSession != null && action == PhysicsStaffAction.LOCK) {
-            final Vec3 hitLocation = JOMLConversion.toMojang(this.dragSession.dragLocalAnchor);
-            this.lockSubLevel(this.dragSession.dragSubLevel, hitLocation, player, hand);
-            spawnParticles(hand, this.dragSession.dragSubLevel, hitLocation, level);
+            final Vec3 hitLocation = JOMLConversion.toMojang(this.dragSession.getLocalAnchor());
+            this.lockSubLevel(this.dragSession.getDraggedSubLevel(), hitLocation, player, hand);
+            spawnParticles(hand, this.dragSession.getDraggedSubLevel(), hitLocation, level);
 
             if (this.state == State.DRAGGING) {
                 this.stopDragging();
@@ -184,6 +186,7 @@ public class PhysicsStaffClientHandler {
 
     private void startDraggingSubLevel(final SubLevel subLevel, final BlockPos blockPos, final LocalPlayer player, final InteractionHand hand) {
         final Vector3d localAnchor = JOMLConversion.atCenterOf(blockPos);
+
         this.dragSession = new ClientDragSession(
                 subLevel,
                 localAnchor,
@@ -230,13 +233,13 @@ public class PhysicsStaffClientHandler {
             }
             case DRAGGING -> {
                 assert this.dragSession != null;
-                final SubLevel draggingSubLevel = this.dragSession.dragSubLevel;
+                final SubLevel draggingSubLevel = this.dragSession.getDraggedSubLevel();
 
                 if (draggingSubLevel != null && draggingSubLevel.isRemoved()) {
                     this.stopDragging();
                 } else {
                     final Vec3 focusPos = getStaffFocusPos(player, player.getMainHandItem().getItem() instanceof PhysicsStaffItem, 1.0f);
-                    this.updateBeam(player.level(), player.getUUID(), focusPos, JOMLConversion.toMojang(this.dragSession.dragLocalAnchor));
+                    this.updateBeam(player.level(), player.getUUID(), focusPos, JOMLConversion.toMojang(this.dragSession.getLocalAnchor()));
                     this.sendDraggingData(player);
 
                     if (this.sound == null) {
@@ -330,13 +333,13 @@ public class PhysicsStaffClientHandler {
         final ClientDragSession session = this.dragSession;
         assert session != null;
 
-        final Vec3 goalPosition = player.getLookAngle().scale(session.distance);
+        final Vec3 goalPosition = player.getLookAngle().scale(session.getDistance());
 
         VeilPacketManager.server().sendPacket(new PhysicsStaffDragPacket(
-                session.dragSubLevel.getUniqueId(),
+                session.getDraggedSubLevel().getUniqueId(),
                 JOMLConversion.toJOML(goalPosition),
-                session.dragLocalAnchor,
-                session.dragOrientation
+                session.getLocalAnchor(),
+                session.getOrientation()
         ));
     }
 
@@ -344,7 +347,11 @@ public class PhysicsStaffClientHandler {
         final ClientDragSession session = this.dragSession;
         assert session != null;
 
-        VeilPacketManager.server().sendPacket(new PhysicsStaffActionPacket(PhysicsStaffAction.STOP_DRAG, session.dragSubLevel.getUniqueId(), session.dragLocalAnchor));
+        VeilPacketManager.server().sendPacket(new PhysicsStaffActionPacket(
+                PhysicsStaffAction.STOP_DRAG,
+                session.getDraggedSubLevel().getUniqueId(),
+                session.getLocalAnchor()
+        ));
         this.dragSession = null;
         this.state = State.PASSIVE;
 
@@ -421,255 +428,19 @@ public class PhysicsStaffClientHandler {
         }
     }
 
-    private double clampDistance(final double distance) {
+    protected double clampDistance(final double distance) {
         return Math.clamp(distance, 2.0, PhysicsStaffItem.RANGE);
     }
 
-    private boolean isRotating() {
+    protected boolean isRotating() {
         return this.holdingStaff && this.dragSession != null && SimKeys.ROTATE_MODE.isPressed();
     }
 
-    private enum State {
+    protected enum State {
         PASSIVE,
         LOCKING,
         DRAGGING,
         OPENING
     }
 
-    public static class PhysicsBeam {
-        private static final float TARGET_SPACING = 1.5f;
-        private static final int MIN_POINTS = 8;
-        private final LineOutline line;
-        private final double targetNodeRadius = 0.2;
-        private final List<BeamNode> nodes = new ObjectArrayList<>();
-        protected float extension;
-        protected float previousExtension;
-        protected float cubeScale;
-        protected float previousCubeScale;
-        private float intensity;
-        private Vec3 start;
-        private Vec3 end;
-        private Vec3 previousStart;
-        private Vec3 previousEnd;
-        private Vec3 serverStart;
-        private Vec3 serverEnd;
-        private double length;
-        private double currentNodeRadius = 0;
-
-        public PhysicsBeam(final Vec3 start, final Vec3 end, final double length) {
-            this.start = start;
-            this.previousStart = start;
-            this.serverStart = start;
-            this.end = end;
-            this.previousEnd = end;
-            this.serverEnd = end;
-            this.intensity = 1;
-            this.line = new LineOutline();
-            this.line.getParams().colored(0xffffff).disableLineNormals().lineWidth(0.6f / 16f);
-            this.length = length;
-            this.extension = 0;
-            this.update();
-        }
-
-        private void update() {
-            final double scaledLength = this.length / TARGET_SPACING;
-            final double targetCount = MIN_POINTS * MIN_POINTS / (scaledLength + MIN_POINTS) + scaledLength;
-
-            if (targetCount > 4096.0)
-                return;
-
-            this.currentNodeRadius = this.targetNodeRadius * Math.sqrt(scaledLength / targetCount);
-
-            while (this.nodes.size() < targetCount - 0.7) {
-                this.nodes.add(new BeamNode());
-            }
-            while (this.nodes.size() > targetCount + 0.7) {
-                this.nodes.remove(0);
-            }
-            for (int i = 1; i < this.nodes.size() - 1; i++) {
-                this.nodes.get(i).update();
-            }
-
-            this.previousExtension = this.extension;
-            this.previousCubeScale = this.cubeScale;
-            if (this.intensity < 0.4) {
-                this.extension = Mth.lerp(0.5f, this.extension, 0);
-            } else {
-                this.extension = Mth.lerp(0.5f, this.extension, 1);
-            }
-            this.cubeScale = this.extension;
-        }
-
-        private void render(final Vec3 start, final Vec3 end, final PoseStack ms, final SuperRenderTypeBuffer buffer, final Vec3 camera, final float pt) {
-            final Vec3 relative = end.subtract(start);
-            this.length = relative.length();
-
-            Vec3 lastPos = start;
-
-            for (int i = 1; i < this.nodes.size(); i++) {
-                final Vec3 offset = this.nodes.get(i).previousPosition.lerp(this.nodes.get(i).position, pt);
-                final Vec3 currentPos = start.add(relative.scale(i / (float) this.nodes.size()).add(offset.scale(this.currentNodeRadius)));
-                this.line.set(lastPos, currentPos).render(ms, buffer, camera, pt);
-                lastPos = currentPos;
-            }
-        }
-
-        private static class BeamNode {
-            Vec3 position = new Vec3(0, 0, 0);
-            Vec3 previousPosition = new Vec3(0, 0, 0);
-
-            void update() {
-                final RandomSource random = Minecraft.getInstance().level.random;
-                this.previousPosition = this.position;
-                this.position = this.position.offsetRandom(random, 3).scale(0.5);
-            }
-        }
-    }
-
-    public static class PhysicsStaffMouseHandler implements InteractCallback {
-
-        @Override
-        public Result onAttack(final int modifiers, final int action, final KeyMapping leftKey) {
-            if (SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.holdingStaff && action == GLFW.GLFW_PRESS) {
-                SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.onItemPunched();
-                return new Result(true);
-            }
-
-            return InteractCallback.super.onAttack(modifiers, action, leftKey);
-        }
-
-        @Override
-        public Result onUse(final int modifiers, final int action, final KeyMapping rightKey) {
-            if (SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.holdingStaff && action == GLFW.GLFW_PRESS) {
-                SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.onItemUsed(PhysicsStaffAction.START_DRAG);
-                return new Result(true);
-            }
-            return InteractCallback.super.onUse(modifiers, action, rightKey);
-        }
-
-        @Override
-        public Result onMouseMove(final double yaw, final double pitch) {
-            final Minecraft mc = Minecraft.getInstance();
-            final PhysicsStaffClientHandler handler = SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER;
-
-            if (handler.isRotating()) {
-                assert handler.dragSession != null;
-                assert mc.player != null;
-
-                final Vec3 axis = mc.player.calculateViewVector(0.0f, mc.player.getYRot() - 90.0f);
-                final Quaterniond orientation = handler.dragSession.dragOrientation();
-
-                final SimItemConfigs config = SimConfigService.INSTANCE.client().itemConfig;
-                final double rotationSensitivity = config.physicsStaffRotateSensitivity.get();
-
-                final double yawChange = Math.toRadians(yaw) * rotationSensitivity;
-                orientation.rotateLocalY(yawChange);
-                orientation.premul(new Quaterniond(new AxisAngle4d(Math.toRadians(-pitch) * rotationSensitivity, axis.x, axis.y, axis.z)));
-
-                return new Result(true);
-            }
-
-            return InteractCallback.super.onMouseMove(yaw, pitch);
-        }
-
-        @Override
-        public Result onScroll(final double deltaX, final double deltaY) {
-            final PhysicsStaffClientHandler handler = SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER;
-            final ClientDragSession dragSession = handler.dragSession;
-
-            final SimItemConfigs config = SimConfigService.INSTANCE.client().itemConfig;
-            final double scrollSensitivity = config.physicsStaffScrollSensitivity.get();
-
-            if (handler.holdingStaff && dragSession != null) {
-                final double currentDistance = dragSession.distance;
-                final boolean sprint = Minecraft.getInstance().options.keySprint.isDown();
-                final double sensMultiplier = Mth.clamp(Math.pow(currentDistance / 10.0, 0.5), 1.0, 5) * (sprint ? 4 : 1);
-                dragSession.setDistance(handler.clampDistance(currentDistance + deltaY * scrollSensitivity * sensMultiplier));
-                return new Result(true);
-            }
-            return InteractCallback.super.onScroll(deltaX, deltaY);
-        }
-    }
-
-    public static final class ClientDragSession {
-        private final SubLevel dragSubLevel;
-        private final Vector3dc dragLocalAnchor;
-        private final Quaterniond dragOrientation;
-        private double distance;
-
-        public ClientDragSession(final SubLevel dragSubLevel, final Vector3dc dragLocalAnchor, final Quaterniond dragOrientation,
-                                 final double distance) {
-            this.dragSubLevel = dragSubLevel;
-            this.dragLocalAnchor = dragLocalAnchor;
-            this.dragOrientation = dragOrientation;
-            this.distance = distance;
-        }
-
-        public SubLevel dragSubLevel() {
-            return this.dragSubLevel;
-        }
-
-        public Vector3dc dragLocalAnchor() {
-            return this.dragLocalAnchor;
-        }
-
-        public Quaterniond dragOrientation() {
-            return this.dragOrientation;
-        }
-
-        public double distance() {
-            return this.distance;
-        }
-
-        public void setDistance(final double distance) {
-            this.distance = distance;
-        }
-
-        @Override
-        public String toString() {
-            return "ClientDragSession[" +
-                    "dragSubLevel=" + this.dragSubLevel + ", " +
-                    "dragLocalAnchor=" + this.dragLocalAnchor + ", " +
-                    "dragOrientation=" + this.dragOrientation + ", " +
-                    "distance=" + this.distance + ']';
-        }
-    }
-
-    public static class LoopingSoundInstance extends AbstractTickableSoundInstance {
-        private final LocalPlayer player;
-
-        protected LoopingSoundInstance(final LocalPlayer player, final SoundEvent event, final RandomSource random) {
-            super(event, SoundSource.PLAYERS, random);
-            this.player = player;
-
-        }
-
-        public void setVolume(final float volume) {
-            this.volume = volume;
-        }
-
-        public void setPitch(final float pitch) {
-            this.pitch = pitch;
-        }
-
-        @Override
-        public double getX() {
-            return this.player.position().x();
-        }
-
-        @Override
-        public double getY() {
-            return this.player.position().y();
-        }
-
-        @Override
-        public double getZ() {
-            return this.player.position().z();
-        }
-
-        @Override
-        public void tick() {
-
-        }
-    }
 }

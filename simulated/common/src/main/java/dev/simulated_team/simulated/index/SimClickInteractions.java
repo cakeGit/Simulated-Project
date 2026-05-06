@@ -7,7 +7,7 @@ import dev.simulated_team.simulated.content.blocks.steering_wheel.SteeringWheelH
 import dev.simulated_team.simulated.content.blocks.throttle_lever.ThrottleLeverHandler;
 import dev.simulated_team.simulated.content.entities.honey_glue.HoneyGlueClientHandler;
 import dev.simulated_team.simulated.content.items.spring.SpringItemHandler;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffClientHandler;
+import dev.simulated_team.simulated.content.physics_staff.client.PhysicsStaffMouseHandler;
 import dev.simulated_team.simulated.util.click_interactions.InteractCallback;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
@@ -21,7 +21,7 @@ public class SimClickInteractions {
     public static ZiplineClientManager ZIPLINE_INTERACTION = register(new ZiplineClientManager());
 
     public static HoneyGlueClientHandler HONEY_GLUE_MANAGER = register(new HoneyGlueClientHandler());
-    public static PhysicsStaffClientHandler.PhysicsStaffMouseHandler PHYSICS_STAFF_MANAGER = register(new PhysicsStaffClientHandler.PhysicsStaffMouseHandler());
+    public static PhysicsStaffMouseHandler PHYSICS_STAFF_MANAGER = register(new PhysicsStaffMouseHandler());
     public static ClientHandleHandler HANDLE_HANDLER = register(new ClientHandleHandler());
     public static PhysicsAssemblerGUIHandler PHYSICS_ASSEMBLER_MANAGER = register(new PhysicsAssemblerGUIHandler());
     public static SteeringWheelHandler STEERING_WHEEL_MANAGER = register(new SteeringWheelHandler());

@@ -6,7 +6,7 @@ import dev.simulated_team.simulated.content.end_sea.EndSeaFadeTransformer;
 import dev.simulated_team.simulated.content.end_sea.EndSeaShadowRenderer;
 import dev.simulated_team.simulated.content.items.merging_glue.MergingGlueItemHandler;
 import dev.simulated_team.simulated.content.items.plunger_launcher.PlungerLauncherItemRenderer;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffClientHandler;
+import dev.simulated_team.simulated.content.physics_staff.client.PhysicsStaffClientHandler;
 import dev.simulated_team.simulated.events.SimulatedCommonClientEvents;
 import dev.simulated_team.simulated.index.SimPartialModels;
 import dev.simulated_team.simulated.index.SimRenderTypes;
@@ -21,7 +21,7 @@ public class SimulatedClient {
 
     public static final PhysicsStaffClientHandler PHYSICS_STAFF_CLIENT_HANDLER = new PhysicsStaffClientHandler();
     public static PlungerLauncherItemRenderer.RenderHandler PLUNGER_LAUNCHER_RENDER_HANDLER = new PlungerLauncherItemRenderer.RenderHandler();
-	public static final MergingGlueItemHandler MERGING_GLUE_ITEM_HANDLER = new MergingGlueItemHandler();
+    public static final MergingGlueItemHandler MERGING_GLUE_ITEM_HANDLER = new MergingGlueItemHandler();
 
     public static void init() {
         SimPartialModels.init();

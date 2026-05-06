@@ -8,7 +8,7 @@ import dev.simulated_team.simulated.content.blocks.rope.strand.client.ZiplineCli
 import dev.simulated_team.simulated.content.blocks.throttle_lever.ThrottleLeverClientGripHandler;
 import dev.simulated_team.simulated.content.end_sea.EndSeaRenderer;
 import dev.simulated_team.simulated.content.items.rope.RopeItem.ClientRopeItemHandler;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffRenderHandler;
+import dev.simulated_team.simulated.content.physics_staff.client.PhysicsStaffRenderHandler;
 import dev.simulated_team.simulated.index.SimClickInteractions;
 import dev.simulated_team.simulated.index.SimKeys;
 import dev.simulated_team.simulated.service.SimConfigService;
@@ -83,8 +83,8 @@ public class SimulatedCommonClientEvents {
     /**
      * Called from loader specific implementation of events. Used to call onMouseMove inside of client handlers. Can be cancelled.
      *
-     * @param yaw    The resulting change in yaw
-     * @param pitch  The modifier key that is being applied to this action.
+     * @param yaw   The resulting change in yaw
+     * @param pitch The modifier key that is being applied to this action.
      */
     public static Result onMouseMove(final double yaw, final double pitch) {
         final Minecraft mc = Minecraft.getInstance();
@@ -166,15 +166,15 @@ public class SimulatedCommonClientEvents {
     public static void postClientTick(final Minecraft instance) {
         SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.tick();
 
-	    if (instance.player == null || instance.level == null) {
-		    return;
-	    }
+        if (instance.player == null || instance.level == null) {
+            return;
+        }
 
-	    final Level level = SableDistUtil.getClientLevel();
-	    final LocalPlayer player = (LocalPlayer) SimDistUtil.getClientPlayer();
+        final Level level = SableDistUtil.getClientLevel();
+        final LocalPlayer player = (LocalPlayer) SimDistUtil.getClientPlayer();
 
-	    SimulatedClient.MERGING_GLUE_ITEM_HANDLER.clientTick(level, player);
-	    ClientRopeItemHandler.tick();
+        SimulatedClient.MERGING_GLUE_ITEM_HANDLER.clientTick(level, player);
+        ClientRopeItemHandler.tick();
         ZiplineClientManager.tick();
         LinkedTypewriterInteractionHandler.tick();
 
@@ -195,6 +195,7 @@ public class SimulatedCommonClientEvents {
 
     /**
      * Called at the head of {@link net.minecraft.client.multiplayer.MultiPlayerGameMode#performUseItemOn(LocalPlayer, InteractionHand, BlockHitResult)}
+     *
      * @return non-null to cancel and use given result
      */
     @Nullable
@@ -208,6 +209,7 @@ public class SimulatedCommonClientEvents {
 
     /**
      * Called when highlighting an itemstack or when populating the creative search menu, to modify item tooltips
+     *
      * @param player null when used for creative search filtering
      */
     public static void appendTooltip(final ItemStack stack, final TooltipFlag iTooltipFlag, final @Nullable Player player, final List<Component> itemTooltip) {
@@ -217,12 +219,13 @@ public class SimulatedCommonClientEvents {
         }
     }
 
-	public static void useItemOnAirEvent(final Level level, final Player player, final ItemStack itemStack, final InteractionHand hand) {
-		SimulatedClient.MERGING_GLUE_ITEM_HANDLER.resetWhenShiftRC(player, itemStack);
-	}
+    public static void useItemOnAirEvent(final Level level, final Player player, final ItemStack itemStack, final InteractionHand hand) {
+        SimulatedClient.MERGING_GLUE_ITEM_HANDLER.resetWhenShiftRC(player, itemStack);
+    }
 
     /**
      * Called when attempting to right-click in world
+     *
      * @return true to cancel
      */
     public static boolean useItemMappingTriggered() {
@@ -231,9 +234,10 @@ public class SimulatedCommonClientEvents {
 
     /**
      * Called when using an item on a block
+     *
      * @return true to cancel
      */
-	public static boolean useItemOnBlockEvent(final Level level, final Player player, final ItemStack itemStack, final InteractionHand hand) {
+    public static boolean useItemOnBlockEvent(final Level level, final Player player, final ItemStack itemStack, final InteractionHand hand) {
         return SimulatedClient.MERGING_GLUE_ITEM_HANDLER.onItemUseBlock(level, player, itemStack, hand);
     }
 }

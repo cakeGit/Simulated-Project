@@ -1,15 +1,15 @@
-package dev.simulated_team.simulated.content.physics_staff;
+package dev.simulated_team.simulated.content.physics_staff.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllSpecialTextures;
 import dev.ryanhcode.sable.Sable;
-import dev.ryanhcode.sable.api.SubLevelHelper;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.mixinterface.clip_overwrite.LevelPoseProviderExtension;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.simulated_team.simulated.SimulatedClient;
+import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffItem;
 import dev.simulated_team.simulated.index.SimItems;
 import dev.simulated_team.simulated.index.SimRenderTypes;
 import foundry.veil.api.client.color.Color;
@@ -92,10 +92,10 @@ public class PhysicsStaffRenderHandler {
 
         hoverBlockPos = null;
 
-        final PhysicsStaffClientHandler.ClientDragSession dragSession = SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.getDragSession();
+        final ClientDragSession dragSession = SimulatedClient.PHYSICS_STAFF_CLIENT_HANDLER.getDragSession();
 
         if (dragSession != null) {
-            final Vector3dc localAnchor = dragSession.dragLocalAnchor();
+            final Vector3dc localAnchor = dragSession.getLocalAnchor();
             hoverBlockPos = BlockPos.containing(localAnchor.x(), localAnchor.y(), localAnchor.z());
             return;
         }

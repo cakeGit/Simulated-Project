@@ -10,7 +10,7 @@ import com.simibubi.create.content.contraptions.glue.SuperGlueEntity;
 import dev.ryanhcode.sable.api.command.SubLevelArgumentType;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.simulated_team.simulated.content.entities.honey_glue.HoneyGlueEntity;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffServerHandler;
+import dev.simulated_team.simulated.content.physics_staff.server.PhysicsStaffServerHandler;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -26,7 +26,7 @@ public class SimCommand {
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext buildContext) {
         final LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal("simulated");
 
-        if(CatnipServices.PLATFORM.isDevelopmentEnvironment()) {
+        if (CatnipServices.PLATFORM.isDevelopmentEnvironment()) {
             cmd.then(Commands.literal("debugthing")
                     .requires(command -> command.hasPermission(2))
                     .then(Commands.literal("start")
@@ -69,13 +69,13 @@ public class SimCommand {
 
         PhysicsStaffServerHandler handler = PhysicsStaffServerHandler.get(ctx.getSource().getLevel());
         for (ServerSubLevel subLevel : subLevels) {
-            if(toggle) {
+            if (toggle) {
                 handler.toggleLock(subLevel.getUniqueId());
                 updated++;
             } else {
                 boolean isLocked = handler.isLocked(subLevel);
                 boolean shouldLock = BoolArgumentType.getBool(ctx, "locked");
-                if(shouldLock != isLocked) {
+                if (shouldLock != isLocked) {
                     handler.toggleLock(subLevel.getUniqueId());
                     updated++;
                 }

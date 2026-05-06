@@ -2,7 +2,7 @@ package dev.simulated_team.simulated.network.packets.physics_staff;
 
 import dev.ryanhcode.sable.util.SableBufferUtils;
 import dev.simulated_team.simulated.Simulated;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffServerHandler;
+import dev.simulated_team.simulated.content.physics_staff.server.PhysicsStaffServerHandler;
 import foundry.veil.api.network.handler.ServerPacketContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

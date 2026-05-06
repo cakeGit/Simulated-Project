@@ -1,4 +1,4 @@
-package dev.simulated_team.simulated.content.physics_staff;
+package dev.simulated_team.simulated.content.physics_staff.server;
 
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;

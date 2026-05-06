@@ -2,7 +2,7 @@ package dev.simulated_team.simulated.neoforge.mixin.item_renderer;
 
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffItem;
-import dev.simulated_team.simulated.content.physics_staff.PhysicsStaffItemRenderer;
+import dev.simulated_team.simulated.content.physics_staff.client.PhysicsStaffItemRenderer;
 import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
