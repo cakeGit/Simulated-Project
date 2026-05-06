@@ -72,16 +72,14 @@ public class PhysicsStaffMouseHandler implements InteractCallback {
         if (dragSession.getLastInputState() == ClientDragSession.DragRotationType.FREE) {
             //Update horizontal rotation axis
             final Vector3d forward = JOMLConversion.toJOML(mc.player.getLookAngle());
-            dragSession.getOrientation().transform(forward);
+            dragSession.getOrientation().transformInverse(forward);
             dragSession.setHorizontalSnapRotationAxis(Direction.getNearest(forward.x, 0, forward.z));
         }
 
         final Direction horizontalRotationAxis = dragSession.getHorizontalSnapRotationAxis();
         final int horizontalSnapRotationSign =
                 (horizontalRotationAxis.getAxisDirection() == Direction.AxisDirection.POSITIVE
-                        ? 1 : -1) *
-                        (horizontalRotationAxis.getAxis() == Direction.Axis.Z
-                                ? -1 : 1);
+                        ? 1 : -1);
 
         if (dragSession.getLastInputState() == ClientDragSession.DragRotationType.FREE) {
             //Take the current orientation and snap it into the local snapOrientation coordinates,
